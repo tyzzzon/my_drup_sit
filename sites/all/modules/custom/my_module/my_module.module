@@ -1,0 +1,147 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function my_module_menu() {
+  $items = array();
+  $items['my_page'] = array(
+    'title' => 'My page',
+    'page callback' => 'drupal_get_form',
+    'access callback' => TRUE,
+    'menu_name' => 'main-menu',
+    'options' => array('attributes' => array('class' => array('test-class'))),
+    'page arguments' => array('my_first_page_form'),
+  );
+  return $items;
+}
+
+/**
+ * Function my_first_page.
+ */
+function my_first_page_form($form, $form_state) {
+  $form = array();
+
+  $types = node_type_get_types();
+  $form['types'] = array(
+    '#type' => 'radios',
+    '#title' => 'Types',
+    '#options' => array(),
+    '#ajax' => array(
+      "callback" => "my_first_page_callback",
+      "wrapper" => "checkboxes-div",
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),
+  );
+  $i = 0;
+  foreach ($types as $type => $type_name) {
+    $form['types']['#options'][$i] = $type;
+    $i++;
+  }
+  $form['container'] = array(
+    '#type' => 'container',
+    '#prefix' => '<div id = "checkboxes-div">',
+    '#suffix' => '</div>',
+  );
+  $form['container']['nodes'] = array(
+    '#title' => '<h1>Nodes</h1>',
+    '#type' => 'checkboxes',
+    '#options' => !empty($form_state['values']) ? my_first_page_get_nodes_of_type($form['types']['#options'][$form_state['values']['types']]) : null,
+  );
+  $form['adding'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Text to add',
+    '#size' => 30,
+  );
+  $form['sub_butt'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+  return $form;
+}
+
+/**
+ *
+ */
+function my_first_page_get_nodes_of_type($node_type) {
+  $i = 1;
+  $nodes = array();
+  $node = node_load_multiple(array(), array('type' => $node_type));
+  foreach ($node as $one_node) {
+    $nodes[$one_node->nid] = 'Node ' . $one_node->nid;
+    $i++;
+  }
+  return $nodes;
+}
+
+/**
+ * callback function
+ */
+function my_first_page_callback($form, $form_state)
+{
+  return $form['container'];
+}
+/**
+ * @param $form
+ * @param $form_state
+ * validation
+ */
+function my_first_page_form_validate($form, $form_state) {
+  if (is_null($form_state['input']['types'])) {
+    form_set_error('types', t('You need to check type'));
+  }
+  if (!is_null($form_state['input']['nodes'])) {
+    $checked = 0;
+    foreach ($form_state['input']['nodes'] as $element => $value) {
+      if (!is_null($value)) {
+        $checked++;
+      }
+    }
+    if (empty($checked)) {
+      form_set_error('nodes', t('You need to check at least one node'));
+    }
+  }
+  if (empty($form_state['values']['adding'])) {
+    form_set_error('adding', t('Value in field "Text to add" is empty.'));
+  }
+  if (valid_email_address($form_state['values']['adding'])) {
+    form_set_error('adding', t('The email address appears to be invalid.'));
+  }
+}
+
+//function theme_container($variables) {
+//  $element = $variables['element'];
+//  // Ensure #attributes is set.
+//  $element += array('#attributes' => array());
+//
+//  // Special handling for form elements.
+//  if (isset($element['#array_parents'])) {
+//    // Assign an html ID.
+//    if (!isset($element['#attributes']['id'])) {
+//      $element['#attributes']['id'] = $element['#id'];
+//    }
+//    // Add the 'form-wrapper' class.
+//    $element['#attributes']['class'][] = 'form-wrapper';
+//  }
+//  _form_set_class($element, array('form-wrapper'));
+//  return '<div' . drupal_attributes($element['#attributes']) . '>' . $element['#children'] . '</div>';
+//}
+
+/**
+ *form-submit
+ *
+ */
+function my_first_page_form_submit($form, $form_state) {
+  $adding_text = $form_state['values']['adding'];
+  foreach ($form_state['values']['nodes'] as $element => $value) {
+    if (!empty($value)) {
+      $node = node_load($element);
+      drupal_set_message(t('Nodes: @num', array('@num' => $node->title)));
+      $node->body[$node->language][0]['value'] .= $adding_text;
+//      node_object_prepare($node); //добавление полей uid, время создания, время редактирования
+      node_save($node); //сохранение ноды в базу
+    }
+  }
+//  drupal_set_message(t('Nodes: @num', array('@num' => $node->body[$node->language][0]['value'])));
+}

@@ -1,0 +1,6 @@
+; &Id:$
+name = My module
+description = module for work with nodes
+version = 7.x-dev
+core = 7.x
+stylesheets[all][] = my_style.css
