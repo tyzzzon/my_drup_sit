@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function flickr_pics_menu() {
+  $items = array();
+  $items['flickr_pics_page'] = array(
+    'title' => 'Flickr pics',
+    'page callback' => 'drupal_get_form',
+    'access callback' => TRUE,
+    'menu_name' => 'main-menu',
+    'options' => array('attributes' => array('class' => array('test-class'))),
+    'page arguments' => array('flickr_pics_page_form'),
+  );
+  return $items;
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function flickr_pics_page_form($form, $form_state) {
+  $form = array();
+
+  $form['upload_date'] = array(
+    '#type' => 'date',
+    '#title' => 'Upload date',
+  );
+
+//  $form['upload_date'] = array(
+//    '#type' => 'date',
+//    '#title' => 'Upload date',
+//  );
+  return $form;
+}
