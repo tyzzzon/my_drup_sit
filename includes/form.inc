@@ -3410,7 +3410,6 @@ function theme_container($variables) {
     // Add the 'form-wrapper' class.
     $element['#attributes']['class'][] = 'form-wrapper';
   }
-
   return '<div' . drupal_attributes($element['#attributes']) . '>' . $element['#children'] . '</div>';
 }
 

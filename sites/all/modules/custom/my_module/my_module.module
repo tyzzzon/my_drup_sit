@@ -34,20 +34,19 @@ function my_first_page_form($form, $form_state) {
       'effect' => 'fade',
     ),
   );
-  $i = 0;
   foreach ($types as $type => $type_name) {
-    $form['types']['#options'][$i] = $type;
-    $i++;
+    $form['types']['#options'][] = $type;
   }
   $form['container'] = array(
     '#type' => 'container',
     '#prefix' => '<div id = "checkboxes-div">',
     '#suffix' => '</div>',
+    '#theme' => 'container_form_container',
   );
   $form['container']['nodes'] = array(
     '#title' => '<h1>Nodes</h1>',
     '#type' => 'checkboxes',
-    '#options' => !empty($form_state['values']) ? my_first_page_get_nodes_of_type($form['types']['#options'][$form_state['values']['types']]) : null,
+    '#options' => !empty($form_state['values']) ? _my_first_page_get_nodes_by_type($form['types']['#options'][$form_state['values']['types']]) : null,
   );
   $form['adding'] = array(
     '#type' => 'textfield',
@@ -64,13 +63,11 @@ function my_first_page_form($form, $form_state) {
 /**
  *
  */
-function my_first_page_get_nodes_of_type($node_type) {
-  $i = 1;
+function _my_first_page_get_nodes_by_type($node_type) {
   $nodes = array();
   $node = node_load_multiple(array(), array('type' => $node_type));
   foreach ($node as $one_node) {
     $nodes[$one_node->nid] = 'Node ' . $one_node->nid;
-    $i++;
   }
   return $nodes;
 }
@@ -92,14 +89,15 @@ function my_first_page_form_validate($form, $form_state) {
     form_set_error('types', t('You need to check type'));
   }
   if (!is_null($form_state['input']['nodes'])) {
-    $checked = 0;
+    $one_node_checked = FALSE;
     foreach ($form_state['input']['nodes'] as $element => $value) {
       if (!is_null($value)) {
-        $checked++;
+        $one_node_checked = TRUE;
+        break;
       }
     }
-    if (empty($checked)) {
-      form_set_error('nodes', t('You need to check at least one node'));
+    if (!$one_node_checked) {
+      form_set_error('container', t('You need to check at least one node'));
     }
   }
   if (empty($form_state['values']['adding'])) {
@@ -110,24 +108,50 @@ function my_first_page_form_validate($form, $form_state) {
   }
 }
 
-//function theme_container($variables) {
-//  $element = $variables['element'];
-//  // Ensure #attributes is set.
-//  $element += array('#attributes' => array());
-//
-//  // Special handling for form elements.
-//  if (isset($element['#array_parents'])) {
-//    // Assign an html ID.
-//    if (!isset($element['#attributes']['id'])) {
-//      $element['#attributes']['id'] = $element['#id'];
-//    }
-//    // Add the 'form-wrapper' class.
-//    $element['#attributes']['class'][] = 'form-wrapper';
-//  }
-//  _form_set_class($element, array('form-wrapper'));
-//  return '<div' . drupal_attributes($element['#attributes']) . '>' . $element['#children'] . '</div>';
-//}
+function my_module_theme() {
+  return array(
+    'container_form_container' => array(
+      'render element' => 'element'
+    )
+  );
+}
 
+function theme_container_form_container($variables) {
+  $element = $variables['element'];
+  // Ensure #attributes is set.
+  $element += array('#attributes' => array());
+
+  // Special handling for form elements.
+  if (isset($element['#array_parents'])) {
+    // Assign an html ID.
+    if (!isset($element['#attributes']['id'])) {
+      $element['#attributes']['id'] = $element['#id'];
+    }
+    // Add the 'form-wrapper' class.
+//    $element['#attributes']['class'][] = 'form-wrapper';
+  }
+  _my_module_set_class($element, array('form-wrapper'));
+  $element['#children'] = drupal_render_children($element);
+  return '<div' . drupal_attributes($element['#attributes']) . '>' . $element['#children'] . '</div>';
+}
+
+function _my_module_set_class(&$element, $class = array()) {
+  if (!empty($class)) {
+    if (!isset($element['#attributes']['class'])) {
+      $element['#attributes']['class'] = array();
+    }
+    $element['#attributes']['class'] = array_merge($element['#attributes']['class'], $class);
+  }
+  // This function is invoked from form element theme functions, but the
+  // rendered form element may not necessarily have been processed by
+  // form_builder().
+  if (!empty($element['#required'])) {
+    $element['#attributes']['class'][] = 'required';
+  }
+  if (isset($element['#parents']) && form_get_error($element) !== NULL && !empty($element['#validated'])) {
+    $element['#attributes']['class'][] = 'alert';
+  }
+}
 /**
  *form-submit
  *
