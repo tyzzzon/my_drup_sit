@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Date module.
+ */
+
+/**
+ * Implements hook_field_schema().
+ */
+function flickr_pics_field_schema($field) {
+  return array(
+    'columns' => array(
+      'flickr_pic_id' => array(
+        'description' => 'The primary identifier for a picture.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'flickr_pic_create_date' => array(
+        'type' => 'varchar',
+          'length' => 20,
+          'not null' => FALSE,
+          'sortable' => TRUE,
+          'views' => TRUE,
+      ),
+      'flickr_pic_tags' => array(
+        'type' => 'varchar',
+        'length' => 500,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'flickr_pic_id' => array('flickr_pic_id'),
+    ),
+  );
+}
+?>

@@ -24,14 +24,156 @@ function flickr_pics_menu() {
 function flickr_pics_page_form($form, $form_state) {
   $form = array();
 
-  $form['upload_date'] = array(
-    '#type' => 'date',
-    '#title' => 'Upload date',
+  $form['flickr_pic'] = array(
+    '#type' => 'flickr_pics_field',
   );
-
-//  $form['upload_date'] = array(
-//    '#type' => 'date',
-//    '#title' => 'Upload date',
-//  );
   return $form;
+}
+
+/**
+ *
+ */
+function flickr_pics_field_info() {
+  return array(
+    'flickr_pics_field' => array(
+      'label' => t('Pictures criteria'),
+      'description' => t("This field is for criteria of pictures on Flickr."),
+      'settings' => array('allowed_values' => array(), 'allowed_values_function' => ''),
+      'default_widget' => 'flickr_pics',
+      'default_formatter' => 'flickr_pics',
+      'property_type' => 'flickr_pics',
+      'property_callbacks' => array('flickr_pics_property_info_callback'),
+    ),
+  );
+};
+
+function flickr_pics_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors){
+  if ($field['type'] == 'flickr_pics_field') {
+    drupal_set_message(t('Everything is ok'));
+  }
+};
+
+
+function flickr_pics_field_is_empty($item, $field){
+  if ($field['type'] == 'flickr_pics_field') {
+    return empty($item['flickr_pic_tags']);
+  }
+};
+
+function flickr_pics_field_widget_info(){
+  return array(
+    'flickr_pics_field' => array(
+      'label' => t('Date and tags field'),
+      'field types' => array('flickr_pics_field'),
+    ),
+  );
+};
+
+function flickr_pics_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element){
+  switch ($instance['widget']['type']) {
+
+    // Compound field for video urls and their preview.
+    case 'flickr_pics_field':
+
+      // The fields to be rendered.
+      $fields = array(
+        'flickr_pic_create_date' => t('Create date'),
+        'flickr_pic_tags' => t('Tags'),
+      );
+
+      // Loop through each field and create the appropriate widget.
+      foreach ($fields as $key => $label) {
+        switch($key) {
+          case 'flickr_pic_create_date':
+            $element[$key] = array(
+              '#type' => 'date_popup',
+              '#title' => $label,
+              '#default_value' => isset($items[$delta][$key]) ? $items[$delta][$key] : '',
+            );
+            break;
+          case 'flickr_pic_tags':
+            $element[$key] = array(
+              '#type' => 'textfield',
+              '#title' => $label,
+              '#default_value' => isset($items[$delta][$key]) ? $items[$delta][$key] : '',
+            );
+            break;
+          default:
+            break;
+        }
+      }
+      break;
+  }
+
+  return $element;
+};
+
+function flickr_pics_field_formatter_info(){
+  return array(
+    'flickr_pics_field' => array(
+      'label' => t('Date and tags field'),
+      'field types' => array('flickr_pics_field'),
+    ),
+  );
+};
+
+function flickr_pics_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
+  $element = array();
+  $node = menu_get_object();
+
+  if (!empty($node)) {
+    switch ($display['type']) {
+      case 'flickr_pics_field':
+
+        // Theme items.
+        foreach ($items as $key => $item) {
+          $flickr_pic = array(
+            'picture_title' => 'Title: '.$node->title,
+            'flickr_pic_create_date' => 'Create date: '.$item['flickr_pic_create_date'],
+            'flickr_pic_tags' => 'Tags: '.$item['flickr_pic_tags']
+          );
+
+//          // Add preview if available.
+//          if (!empty($item['video_preview_fid'])) {
+//            $video['video_preview'] = cl_helpers_get_full_path($item['video_preview_fid']);
+//          }
+
+          $element[$key]['#markup'] = '<span>'.$flickr_pic['picture_title'].'</span><br>'.
+            '<span>'.$flickr_pic['flickr_pic_create_date'].'</span><br>'.
+            '<span>'.$flickr_pic['flickr_pic_tags'].'</span>';
+        }
+        break;
+    }
+  }
+
+  return $element;
+};
+
+/**
+ * Custom callback function for metadata.
+ *
+ * @param $info
+ * @param $entity_type
+ * @param $field
+ * @param $instance
+ * @param $field_type
+ */
+function flickr_pics_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
+  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
+
+  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+
+  unset($property['query callback']);
+
+  $property['property info']['video_url'] = array(
+    'type' => 'text',
+    'label' => t('Video url'),
+    'setter callback' => 'entity_property_verbatim_set',
+  );
+  $property['property info']['video_preview_fid'] = array(
+    'type' => 'text',
+    'label' => t('Video preview fid'),
+    'setter callback' => 'entity_property_verbatim_set',
+  );
 }

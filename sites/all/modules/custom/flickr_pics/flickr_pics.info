@@ -1,6 +1,7 @@
 ; &Id:$
 name = Flickr pics
 description = module for watching pictures from Flickr by date and tags
+dependencies[] = date_popup
 version = 7.x-dev
 core = 7.x
 ;stylesheets[all][] = my_style.css
