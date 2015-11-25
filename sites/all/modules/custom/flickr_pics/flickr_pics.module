@@ -89,6 +89,7 @@ function flickr_pics_field_widget_form(&$form, &$form_state, $field, $instance, 
               '#type' => 'date_popup',
               '#title' => $label,
               '#default_value' => isset($items[$delta][$key]) ? $items[$delta][$key] : '',
+              '#date_format' => 'd/m/Y'
             );
             break;
           case 'flickr_pic_tags':

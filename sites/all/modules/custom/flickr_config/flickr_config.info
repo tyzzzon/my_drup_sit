@@ -1,0 +1,6 @@
+; &Id:$
+name = Flickr config
+description = configs for flickr API
+dependencies[] = flickr_pics
+version = 7.x-dev
+core = 7.x

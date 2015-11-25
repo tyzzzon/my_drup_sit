@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function flickr_config_menu() {
+  $items = array();
+  $items['flickr_config_page'] = array(
+    'title' => 'Flickr config',
+    'page callback' => 'drupal_get_form',
+    'access callback' => TRUE,
+//    'options' => array('attributes' => array('class' => array('test-class'))),
+    'page arguments' => array('flickr_config_page_form'),
+  );
+  return $items;
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function flickr_config_page_form($form, $form_state) {
+  $form = array();
+
+  $form['flickr_api_key'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('flickr_api_key'),
+    '#title' => 'Flickr API key',
+  );
+
+  return system_settings_form($form);
+}
