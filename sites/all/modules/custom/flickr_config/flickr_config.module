@@ -9,7 +9,6 @@ function flickr_config_menu() {
     'title' => 'Flickr config',
     'page callback' => 'drupal_get_form',
     'access callback' => TRUE,
-//    'options' => array('attributes' => array('class' => array('test-class'))),
     'page arguments' => array('flickr_config_page_form'),
   );
   return $items;

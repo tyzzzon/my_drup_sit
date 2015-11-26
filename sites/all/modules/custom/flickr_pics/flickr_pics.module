@@ -27,6 +27,11 @@ function flickr_pics_page_form($form, $form_state) {
   $form['flickr_pic'] = array(
     '#type' => 'flickr_pics_field',
   );
+  $flickr_api_key = variable_get('flickr_api_key');
+  $libraries = libraries_get_path('phpFlickr').'/phpFlickr.php';
+  require_once ($libraries);
+  $php_flickr = new phpFlickr($flickr_api_key);
+  dpm($php_flickr->photos_getRecent());
   return $form;
 }
 
