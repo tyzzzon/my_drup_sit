@@ -31,7 +31,7 @@ function flickr_pics_page_form($form, $form_state) {
   $libraries = libraries_get_path('phpFlickr').'/phpFlickr.php';
   require_once ($libraries);
   $php_flickr = new phpFlickr($flickr_api_key);
-  dpm($php_flickr->photos_getRecent());
+  dpm($php_flickr->photos_search(array('api_key' => $php_flickr->api_key, 'user_id' => '137868270@N03', 'tags' => 'bridge', 'min_upload_date' => '11/26/15', 'max_upload_date' => '11/27/15')));
   return $form;
 }
 

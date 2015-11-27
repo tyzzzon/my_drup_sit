@@ -960,7 +960,7 @@ if ( !class_exists('phpFlickr') ) {
        * so many arguments to this API method. What you'll need to do
        * is pass an associative array to the function containing the
        * arguments you want to pass to the API.  For example:
-       *   $photos = $f->photos_search(array("tags"=>"brown,cow", "tag_mode"=>"any"));
+       *   $photos = $f->photos_search(array("tags"=>"brown,cow", "tag_mode"=>"any"));//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
        * This will return photos tagged with either "brown" or "cow"
        * or both. See the API documentation (link below) for a full
        * list of arguments.
@@ -1114,7 +1114,7 @@ if ( !class_exists('phpFlickr') ) {
     }
     function photos_people_getList ($photo_id) {
       /* https://www.flickr.com/services/api/flickr.photos.people.getList.html */
-      return $this->call('flickr.photos.people.getList', array('photo_id' => $photo_id));
+      return $this->call('flickr.photos.people.getList', array('photo_id' => $photo_id));/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
     /* Photos - Upload Methods */
     function photos_upload_checkTickets ($tickets) {
