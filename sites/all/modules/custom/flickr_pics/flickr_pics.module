@@ -27,11 +27,6 @@ function flickr_pics_page_form($form, $form_state) {
   $form['flickr_pic'] = array(
     '#type' => 'flickr_pics_field',
   );
-  $flickr_api_key = variable_get('flickr_api_key');
-  $libraries = libraries_get_path('phpFlickr').'/phpFlickr.php';
-  require_once ($libraries);
-  $php_flickr = new phpFlickr($flickr_api_key);
-  dpm($php_flickr->photos_search(array('api_key' => $php_flickr->api_key, 'user_id' => '137868270@N03', 'tags' => 'bridge', 'min_upload_date' => '11/26/15', 'max_upload_date' => '11/27/15')));
   return $form;
 }
 
@@ -123,37 +118,60 @@ function flickr_pics_field_formatter_info(){
   );
 };
 
-function flickr_pics_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
+function flickr_pics_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $item, $display){
   $element = array();
   $node = menu_get_object();
 
+  $flickr_api_key = variable_get('flickr_api_key');
+  $libraries = libraries_get_path('phpFlickr').'/phpFlickr.php';
+  require_once ($libraries);
+  $php_flickr = new phpFlickr($flickr_api_key);
   if (!empty($node)) {
     switch ($display['type']) {
       case 'flickr_pics_field':
 
         // Theme items.
-        foreach ($items as $key => $item) {
-          $flickr_pic = array(
-            'picture_title' => 'Title: '.$node->title,
-            'flickr_pic_create_date' => 'Create date: '.$item['flickr_pic_create_date'],
-            'flickr_pic_tags' => 'Tags: '.$item['flickr_pic_tags']
-          );
+        $flickr_pic = array(
+          'picture_title' => 'Title: '.$node->title,
+          'flickr_pic_create_date' => !empty($item[0]['flickr_pic_create_date'])?'Create date: '.$item[0]['flickr_pic_create_date']:'',
+          'flickr_pic_tags' => !empty($item[0]['flickr_pic_tags'])?'Tags: '.$item[0]['flickr_pic_tags']:''
+        );
 
-//          // Add preview if available.
-//          if (!empty($item['video_preview_fid'])) {
-//            $video['video_preview'] = cl_helpers_get_full_path($item['video_preview_fid']);
-//          }
+//         // Add preview if available.
+//         if (!empty($item['video_preview_fid'])) {
+//           $video['video_preview'] = cl_helpers_get_full_path($item['video_preview_fid']);
+//         }
 
-          $element[$key]['#markup'] = '<span>'.$flickr_pic['picture_title'].'</span><br>'.
-            '<span>'.$flickr_pic['flickr_pic_create_date'].'</span><br>'.
-            '<span>'.$flickr_pic['flickr_pic_tags'].'</span>';
-        }
-        break;
+        $element[0]['#markup'] = ('<span>'.$flickr_pic['picture_title'].'</span><br>')
+          .'<span>'.$flickr_pic['flickr_pic_create_date'].'</span><br>'
+          .'<span>'.$flickr_pic['flickr_pic_tags'].'</span>';
+        $element[0]['#theme'] = 'flickr_pics';
+        $azaza = $php_flickr->photos_search(array('api_key' => $php_flickr->api_key,
+          'user_id' => '137868270@N03',
+          'tags' => $item[0]['flickr_pic_tags'],
+          'min_upload_date' => $item[0]['flickr_pic_create_date'],
+          'max_upload_date' => substr($item[0]['flickr_pic_create_date'], 0, -8).'23:59:59'));
+        dpm($azaza);
     }
   }
 
   return $element;
 };
+
+/**
+ * Implements hook_theme()
+ */
+function flickr_pics_theme() {
+  return array(
+    'flickr_pics_page' => array(
+      'template' => 'flickr_pics',
+      'arguments' => array(
+        'date' => NULL,
+        'tags' => NULL,
+      ),
+    ),
+  );
+}
 
 /**
  * Custom callback function for metadata.
@@ -164,22 +182,22 @@ function flickr_pics_field_formatter_view($entity_type, $entity, $field, $instan
  * @param $instance
  * @param $field_type
  */
-function flickr_pics_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
-  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
-
-  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
-  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
-
-  unset($property['query callback']);
-
-  $property['property info']['video_url'] = array(
-    'type' => 'text',
-    'label' => t('Video url'),
-    'setter callback' => 'entity_property_verbatim_set',
-  );
-  $property['property info']['video_preview_fid'] = array(
-    'type' => 'text',
-    'label' => t('Video preview fid'),
-    'setter callback' => 'entity_property_verbatim_set',
-  );
-}
+//function flickr_pics_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
+//  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
+//
+//  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+//  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+//
+//  unset($property['query callback']);
+//
+//  $property['property info']['video_url'] = array(
+//    'type' => 'text',
+//    'label' => t('Video url'),
+//    'setter callback' => 'entity_property_verbatim_set',
+//  );
+//  $property['property info']['video_preview_fid'] = array(
+//    'type' => 'text',
+//    'label' => t('Video preview fid'),
+//    'setter callback' => 'entity_property_verbatim_set',
+//  );
+//}
