@@ -8,8 +8,10 @@ function flickr_config_menu() {
   $items['flickr_config_page'] = array(
     'title' => 'Flickr config',
     'page callback' => 'drupal_get_form',
-    'access callback' => TRUE,
+    'access arguments' => array('access administration pages'),
     'page arguments' => array('flickr_config_page_form'),
+    'theme callback' => 'variable_get',
+    'theme arguments' => array('admin_theme'),
   );
   return $items;
 }
@@ -29,4 +31,8 @@ function flickr_config_page_form($form, $form_state) {
   );
 
   return system_settings_form($form);
+}
+
+function seven_theme_callback(){
+  return 'stark';
 }

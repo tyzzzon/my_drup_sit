@@ -39,4 +39,3 @@ function flickr_pics_field_schema($field) {
     ),
   );
 }
-?>
